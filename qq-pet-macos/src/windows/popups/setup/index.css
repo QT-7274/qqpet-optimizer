@@ -255,32 +255,27 @@
   transform: rotate(180deg);
 }
 
-/* //按钮 */
-.sliderLabel {
-  width: 100%;
-  height: 40px;
+/* //按钮：文案左、确定右，不再叠字半透明 */
+.butsRow {
+  align-items: center;
+  gap: 8px;
+  min-height: 40px;
 }
-.sliderButs {
-  position: absolute;
-  left: 0;
-  top: 0;
-  width: 100%;
-  height: 100%;
-  background-color: rgba(255, 255, 255, 0.7);
-  border-radius: 8px;
-  opacity: 0.15;
-  transition: all 0.5s;
+.sliderLabelText {
+  width: auto;
+  min-width: 0;
+  line-height: 1.3;
+  word-break: break-all;
+  text-align: left;
 }
-.sliderLabel:hover .sliderButs {
-  opacity: 1;
-}
-
 .sliderButs_submit {
+  flex: 0 0 84px;
   width: 84px;
   height: 40px;
   background-image: url("../assets/sysSeting/queding00.png");
   background-size: 100% 100%;
   background-repeat: no-repeat;
+  opacity: 1;
 }
 .sliderButs_submit:hover {
   background-image: url("../assets/sysSeting/queding01.png");

@@ -40,7 +40,7 @@
                 :class="[isSetKey == (stem.value + '-' + 0) ? 'activeKey':'']"
                 @click="changeShortKeysBut(stem,0)"
               >
-                {{sysData[stem.value]?.[0] || "''"}}
+                {{formatShortcutKey(sysData[stem.value]?.[0])}}
               </div>
               <div cancel>+</div>
               <div
@@ -48,14 +48,14 @@
                 :class="[isSetKey == (stem.value + '-' + 1) ? 'activeKey':'']"
                 @click="changeShortKeysBut(stem,1)"
               >
-                {{sysData[stem.value]?.[1] || "''"}}
+                {{formatShortcutKey(sysData[stem.value]?.[1])}}
               </div>
               <div
                 class="shortcutKeysTip"
                 :class="[isSetKey?.split && isSetKey.split('-')[0] == stem.value? 'openTip':'']"
               >
                 ESC-退出选择 ， 可选 ：{{isSetKey?.split &&
-                useKeys[isSetKey.split('-')[1]].join(',')}}
+                formatShortcutChoices(isSetKey.split('-')[1])}}
               </div>
             </div>
           </div>
@@ -87,23 +87,16 @@
             </div>
           </div>
           <div
-            class="childrenIn fcc slider"
+            class="childrenIn fcb slider butsRow"
             v-if="stem.type == 'buts' && !stem?.unShow"
             v-show="!stem.control || sysData[stem.value] != 'cantSee'"
-            :style="{
-            opacity:1
-          }"
           >
-            <!-- {{ sysData[stem.value]}} -->
-            <div class="label f1 w100 por sliderLabel fcc tc" cancel>
-              {{stem.label}}
-              <div class="sliderButs f1 w100 fcc">
-                <div
-                  class="sliderButs_submit focusPress not_drag"
-                  @click="setStting(stem)"
-                ></div>
-              </div>
-            </div>
+            <div class="label f1 sliderLabelText" cancel>{{stem.label}}</div>
+            <div
+              class="sliderButs_submit focusPress not_drag"
+              @click="setStting(stem)"
+              title="确定"
+            ></div>
           </div>
           <div class="childrenIn fC slider" v-if="stem.type == 'input'">
             <div class="label" cancel>{{stem.label}}：</div>
