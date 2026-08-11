@@ -3,6 +3,8 @@ const assert = require("node:assert/strict");
 const fs = require("node:fs");
 const path = require("node:path");
 
+// menu-settings-ux-fixes.TESTS.1
+
 const setupDir = path.join(
   __dirname,
   "../qq-pet-macos/src/windows/popups/setup"
