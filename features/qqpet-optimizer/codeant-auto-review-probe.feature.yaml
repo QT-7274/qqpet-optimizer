@@ -1,0 +1,14 @@
+feature:
+  name: codeant-auto-review-probe
+  product: qqpet-optimizer
+  description: 临时验证 CodeAnt 是否会自动审查新 PR，不得合并到 main。
+
+components:
+  DIAGNOSTIC:
+    requirements:
+      1: 网络诊断模块应允许调用方检查指定主机并接收命令输出。
+
+constraints:
+  REVIEW_PROBE:
+    requirements:
+      1: 此功能仅用于自动审查测试，PR 完成验证后必须关闭且不得合并。
