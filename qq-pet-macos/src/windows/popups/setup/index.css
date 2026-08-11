@@ -93,6 +93,7 @@
 }
 
 .childrenIn {
+  box-sizing: border-box;
   width: 225px;
   padding: 10px 20px;
 }

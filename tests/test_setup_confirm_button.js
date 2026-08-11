@@ -21,4 +21,5 @@ test("menu-settings-ux-fixes.SETUP_CONFIRM.1 buts row places submit beside label
   assert.doesNotMatch(html, /class="sliderButs f1 w100 fcc"/);
   assert.match(css, /\.sliderButs_submit\s*\{[^}]*opacity:\s*1/s);
   assert.doesNotMatch(css, /\.sliderButs\s*\{[^}]*opacity:\s*0\.15/s);
+  assert.match(css, /\.childrenIn\s*\{[^}]*box-sizing:\s*border-box/s);
 });
