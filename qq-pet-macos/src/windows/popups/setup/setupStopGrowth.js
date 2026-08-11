@@ -1,5 +1,7 @@
 /**
  * Keep setup "暂停成长" checkbox in sync with pet.maxInfo.stopGrowth.
+ * menu-settings-ux-fixes.SETUP_STOP_GROWTH.1
+ * menu-settings-ux-fixes.SETUP_STOP_GROWTH.2
  */
 (function (root, factory) {
   const api = factory();

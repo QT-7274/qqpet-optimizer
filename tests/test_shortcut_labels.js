@@ -9,7 +9,8 @@ const {
   toAccelerator,
 } = require("../qq-pet-macos/src/windows/util/shortcutLabels.js");
 
-test("darwin shows Mac modifier labels", () => {
+// menu-settings-ux-fixes.SETUP_SHORTCUTS.1
+test("menu-settings-ux-fixes.SETUP_SHORTCUTS.1 darwin shows Mac modifier labels", () => {
   assert.equal(formatToken("CONTROL", "darwin"), "Control(⌃)");
   assert.equal(formatToken("ALT", "darwin"), "Option(⌥)");
   assert.equal(formatToken("SHIFT", "darwin"), "Shift(⇧)");
@@ -24,7 +25,8 @@ test("non-darwin keeps familiar Win-style labels", () => {
   assert.equal(formatToken("META", "win32"), "Win");
 });
 
-test("darwin modifier choices include Command/META", () => {
+// menu-settings-ux-fixes.SETUP_SHORTCUTS.2
+test("menu-settings-ux-fixes.SETUP_SHORTCUTS.2 darwin modifier choices include Command/META", () => {
   assert.deepEqual(modifierTokens("darwin"), [
     "ALT",
     "SHIFT",
@@ -34,21 +36,24 @@ test("darwin modifier choices include Command/META", () => {
   assert.deepEqual(modifierTokens("win32"), ["ALT", "SHIFT", "CONTROL"]);
 });
 
-test("choice tip uses display labels", () => {
+// menu-settings-ux-fixes.SETUP_SHORTCUTS.1
+test("menu-settings-ux-fixes.SETUP_SHORTCUTS.1 choice tip uses display labels", () => {
   assert.equal(
     formatChoiceList(["ALT", "SHIFT", "CONTROL", "META"], "darwin"),
     "Option(⌥),Shift(⇧),Control(⌃),Command(⌘)"
   );
 });
 
-test("normalize captured KeyboardEvent.key values", () => {
+// menu-settings-ux-fixes.SETUP_SHORTCUTS.2
+test("menu-settings-ux-fixes.SETUP_SHORTCUTS.2 normalize captured KeyboardEvent.key values", () => {
   assert.equal(normalizeCapturedKey("Meta"), "META");
   assert.equal(normalizeCapturedKey("Control"), "CONTROL");
   assert.equal(normalizeCapturedKey("Alt"), "ALT");
   assert.equal(normalizeCapturedKey("a"), "A");
 });
 
-test("toAccelerator maps tokens for Electron globalShortcut", () => {
+// menu-settings-ux-fixes.SETUP_SHORTCUTS.3
+test("menu-settings-ux-fixes.SETUP_SHORTCUTS.3 toAccelerator maps tokens for Electron globalShortcut", () => {
   assert.equal(toAcceleratorToken("CONTROL"), "Control");
   assert.equal(toAcceleratorToken("META"), "Command");
   assert.equal(toAcceleratorToken("ALT"), "Alt");

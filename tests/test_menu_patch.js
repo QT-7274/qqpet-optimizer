@@ -34,7 +34,8 @@ function menuWithStore() {
   ];
 }
 
-test("legacy where [4] with 商城 clobbers 设置及帮助 (bug reproduction)", () => {
+// menu-settings-ux-fixes.RIGHT_MENU.1
+test("menu-settings-ux-fixes.RIGHT_MENU.1 legacy where [4] with 商城 clobbers 设置及帮助 (bug reproduction)", () => {
   const menu = menuWithStore();
   applyMenuPatch(menu, {
     data: { label: "停止成长", value: "stopGrowth" },
@@ -52,7 +53,8 @@ test("legacy where [4] with 商城 clobbers 设置及帮助 (bug reproduction)",
   );
 });
 
-test("value match updates growth without clobbering 设置及帮助", () => {
+// menu-settings-ux-fixes.RIGHT_MENU.1
+test("menu-settings-ux-fixes.RIGHT_MENU.1 value match updates growth without clobbering 设置及帮助", () => {
   const menu = menuWithStore();
   applyMenuPatch(menu, {
     data: { label: "开启成长", value: "openGrowth" },
@@ -68,7 +70,8 @@ test("value match updates growth without clobbering 设置及帮助", () => {
   );
 });
 
-test("value match updates mute under 设置及帮助 when 商城 present", () => {
+// menu-settings-ux-fixes.RIGHT_MENU.1
+test("menu-settings-ux-fixes.RIGHT_MENU.1 value match updates mute under 设置及帮助 when 商城 present", () => {
   const menu = menuWithStore();
   applyMenuPatch(menu, {
     data: { label: "关闭免打扰", value: "closeMute", new: true },
@@ -80,7 +83,8 @@ test("value match updates mute under 设置及帮助 when 商城 present", () =>
   assert.equal(menu[3].children[1].value, "petInfo");
 });
 
-test("hide quit by value keeps settings visible", () => {
+// menu-settings-ux-fixes.RIGHT_MENU.2
+test("menu-settings-ux-fixes.RIGHT_MENU.2 hide quit by value keeps settings visible", () => {
   const menu = menuWithStore();
   hideMenuValue(menu, "quit");
 

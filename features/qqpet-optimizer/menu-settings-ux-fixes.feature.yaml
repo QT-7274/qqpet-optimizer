@@ -1,0 +1,31 @@
+feature:
+  name: menu-settings-ux-fixes
+  product: qqpet-optimizer
+  description: 修复右键菜单被覆盖、系统设置确定按钮、Mac 快捷键文案、暂停成长不同步，以及 infoCard 昵称草稿被清空。
+
+components:
+  RIGHT_MENU:
+    requirements:
+      1: 右键菜单在插入「商城」后，仍应按菜单项 value 更新成长/静音文案，不得覆盖「设置及帮助」。
+      2: 按 value 隐藏「退出」时，「设置及帮助」必须仍可见。
+  SETUP_CONFIRM:
+    requirements:
+      1: 系统设置中 type 为 buts 的操作项，确定按钮应位于文案右侧且常显，不得半透明叠在文案下方。
+  SETUP_SHORTCUTS:
+    requirements:
+      1: 在 macOS 上，快捷键设置应显示 Mac 友好修饰键文案（Control/Option/Shift/Command 及符号）。
+      2: 在 macOS 上，修饰键可选项应包含 Command，捕获 Meta 时应规范化为可注册的修饰键 token。
+      3: 注册全局快捷键前，应将 CONTROL/ALT/META 等 token 规范化为 Electron accelerator 可识别名称。
+  SETUP_STOP_GROWTH:
+    requirements:
+      1: 打开系统设置时，「暂停成长」勾选状态应与 pet.maxInfo.stopGrowth 一致。
+      2: 点击「暂停成长」后，勾选 UI 应立即反映切换后的状态；已暂停时再次点击应恢复成长。
+  INFO_CARD:
+    requirements:
+      1: 保存宠物名时，不得清空主人昵称的未保存草稿。
+      2: 保存主人昵称时，不得清空宠物名的未保存草稿。
+
+constraints:
+  TESTS:
+    requirements:
+      1: 上述行为应有对应单元测试，并在测试名或注释中引用完整 ACID。

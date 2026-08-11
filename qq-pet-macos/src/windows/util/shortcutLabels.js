@@ -1,6 +1,9 @@
 /**
  * Map Electron-style shortcut tokens to platform display labels,
  * and normalize captured keys / accelerator strings.
+ * menu-settings-ux-fixes.SETUP_SHORTCUTS.1
+ * menu-settings-ux-fixes.SETUP_SHORTCUTS.2
+ * menu-settings-ux-fixes.SETUP_SHORTCUTS.3
  */
 (function (root, factory) {
   const api = factory();

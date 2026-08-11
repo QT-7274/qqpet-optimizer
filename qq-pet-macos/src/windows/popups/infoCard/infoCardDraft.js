@@ -1,6 +1,8 @@
 /**
  * Keep unsaved nickname drafts when pet info refresh arrives.
  * Saving one field must not wipe the other field's in-progress input.
+ * menu-settings-ux-fixes.INFO_CARD.1
+ * menu-settings-ux-fixes.INFO_CARD.2
  */
 (function (root, factory) {
   const api = factory();

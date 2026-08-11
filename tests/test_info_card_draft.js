@@ -14,7 +14,8 @@ test("first load fills both drafts from store", () => {
   assert.equal(next.petName, "爹");
 });
 
-test("saving pet name keeps dirty host draft", () => {
+// menu-settings-ux-fixes.INFO_CARD.1
+test("menu-settings-ux-fixes.INFO_CARD.1 saving pet name keeps dirty host draft", () => {
   const prev = { info: { host: "主", name: "爹" }, maxInfo: { level: 1 } };
   const next = applyPetInfoToDrafts(
     prev,
@@ -25,7 +26,8 @@ test("saving pet name keeps dirty host draft", () => {
   assert.equal(next.petName, "新名字");
 });
 
-test("saving host keeps dirty pet name draft", () => {
+// menu-settings-ux-fixes.INFO_CARD.2
+test("menu-settings-ux-fixes.INFO_CARD.2 saving host keeps dirty pet name draft", () => {
   const prev = { info: { host: "主", name: "爹" }, maxInfo: { level: 1 } };
   const next = applyPetInfoToDrafts(
     prev,

@@ -1,6 +1,8 @@
 /**
  * Value-based right-menu patches.
  * Avoids fragile 1-based index updates that break when items like 商城 are inserted.
+ * menu-settings-ux-fixes.RIGHT_MENU.1
+ * menu-settings-ux-fixes.RIGHT_MENU.2
  */
 (function (root, factory) {
   const api = factory();
