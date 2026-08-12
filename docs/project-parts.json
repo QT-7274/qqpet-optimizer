@@ -1,0 +1,28 @@
+{
+  "repository_type": "multi-part",
+  "parts": [
+    {
+      "id": "desktop-port",
+      "path": "qq-pet-macos",
+      "type": "desktop",
+      "entry_point": "qq-pet-macos/main.js"
+    },
+    {
+      "id": "asar-reference",
+      "path": "qq_pet_asar",
+      "type": "desktop-reference",
+      "entry_point": "qq_pet_asar/main.js"
+    }
+  ],
+  "integration_points": [
+    {
+      "from": "asar-reference",
+      "to": "desktop-port",
+      "type": "Manual behavior and implementation comparison"
+    }
+  ],
+  "notes": [
+    "Python CLI and OpenClaw Skill were removed; pet care uses in-app interaction.",
+    "Electron dataWatcher remains for optional external Store file writes."
+  ]
+}

@@ -49,5 +49,9 @@ qq-pet-macos/build_*_Conflict/
 
 # 备份文件
 *.bak
-docs/
 .env
+
+# BMAD
+.agents/
+.claude/
+_bmad/
