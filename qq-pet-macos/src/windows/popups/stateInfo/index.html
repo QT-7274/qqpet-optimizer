@@ -7,7 +7,10 @@
         + ((petInfo?.otherOptions?.pinkDiamond ? 'u':'n') + (petInfo?.otherOptions?.pinkDiamondLevel || '1')) 
         +'.svg)'}"></div>
       </div>
-      <div class="close focusPress" @click="goClose"></div>
+      <div class="headActions">
+        <div class="openSetup focusPress" title="系统设置" @click="openSetup"></div>
+        <div class="close focusPress" @click="goClose"></div>
+      </div>
     </div>
     <div class="main">
       <div class="onceInfo">

@@ -50,6 +50,30 @@
   top: 1px;
 }
 
+.headActions {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+.openSetup {
+  height: 17px;
+  width: 17px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath fill='%23042b4b' d='M6.55 1.1h2.9l.32 1.72c.5.14.96.36 1.38.64l1.52-.86 2.05 2.05-.86 1.52c.28.42.5.88.64 1.38L16 6.55v2.9l-1.72.32c-.14.5-.36.96-.64 1.38l.86 1.52-2.05 2.05-1.52-.86a5.3 5.3 0 0 1-1.38.64L9.45 16h-2.9l-.32-1.72a5.3 5.3 0 0 1-1.38-.64l-1.52.86L1.28 12.45l.86-1.52a5.3 5.3 0 0 1-.64-1.38L0 9.45v-2.9l1.72-.32c.14-.5.36-.96.64-1.38l-.86-1.52L3.55 1.28l1.52.86c.42-.28.88-.5 1.38-.64L6.55 1.1zm1.45 4.15a2.75 2.75 0 1 0 0 5.5 2.75 2.75 0 0 0 0-5.5z'/%3E%3C/svg%3E");
+  background-size: 13px 13px;
+  background-position: center;
+  background-repeat: no-repeat;
+  position: relative;
+  opacity: 0.78;
+  top: -3px;
+}
+.openSetup:hover {
+  opacity: 1;
+  top: -2px;
+}
+.openSetup:active {
+  position: relative;
+  top: 1px;
+}
 .close {
   height: 17px;
   width: 17px;
