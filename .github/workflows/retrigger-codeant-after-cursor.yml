@@ -1,0 +1,55 @@
+# After Cursor Automation pushes a CodeAnt autofix, ask CodeAnt to review the new SHA.
+# Native incremental review did not run on cursoragent pushes in this repo.
+#
+# Loop guard: skip if this HEAD SHA is already in a completed CodeAnt status row,
+# or if we already posted a retrigger comment for it.
+name: Retrigger CodeAnt after Cursor autofix
+
+on:
+  pull_request:
+    types: [synchronize]
+
+jobs:
+  retrigger:
+    if: |
+      github.event.sender.login == 'cursoragent' ||
+      github.event.sender.login == 'cursor[bot]'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      - name: Comment @codeant-ai: review for the new SHA
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          PR: ${{ github.event.pull_request.number }}
+          SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+          SHORT="${SHA:0:7}"
+          COMMENTS="$(gh api "repos/${REPO}/issues/${PR}/comments" --paginate)"
+
+          if echo "$COMMENTS" | jq -e --arg sha "$SHA" --arg short "$SHORT" '
+            [.[] | select(.user.login == "github-actions[bot]")
+              | select(.body | contains("@codeant-ai: review"))
+              | select(.body | contains($short) or contains($sha))]
+            | length > 0
+          ' >/dev/null; then
+            echo "Already asked CodeAnt to review ${SHORT}"
+            exit 0
+          fi
+
+          if echo "$COMMENTS" | jq -e --arg sha "$SHA" '
+            [.[] | select(.user.login == "codeant-ai[bot]")
+              | select(.body | contains("codeant-review-status"))
+              | select(.body | contains($sha) and contains("\"done\":true"))]
+            | length > 0
+          ' >/dev/null; then
+            echo "CodeAnt already completed a review of ${SHORT}"
+            exit 0
+          fi
+
+          gh api "repos/${REPO}/issues/${PR}/comments" \
+            -f body="$(printf '%s\n\n<!-- codeant-retrigger:%s -->' '@codeant-ai: review' "$SHA")"
+          echo "Asked CodeAnt to review ${SHORT}"
