@@ -34,6 +34,13 @@ test("menu-bar-status-settings.OPEN.1 hidden setup creates the settings window",
   assert.deepEqual(calls, ["cleate"]);
 });
 
+// menu-bar-status-settings.OPEN.1
+test("menu-bar-status-settings.OPEN.1 hidden but existing setup is reused", () => {
+  const { setup, calls } = fakeSetup({ show: false, hasWindow: true });
+  assert.equal(openOrFocusSetup(setup), "focus");
+  assert.deepEqual(calls, ["show", "focus"]);
+});
+
 // menu-bar-status-settings.OPEN.2
 test("menu-bar-status-settings.OPEN.2 shown setup is focused and not created again", () => {
   const { setup, calls } = fakeSetup({ show: true });

@@ -18,7 +18,7 @@
 
   function openOrFocusSetup(setup) {
     if (!setup) return "missing";
-    if (setup.show && isUsableWindow(setup.window)) {
+    if (isUsableWindow(setup.window)) {
       if (typeof setup.window.show === "function") setup.window.show();
       if (typeof setup.window.focus === "function") setup.window.focus();
       return "focus";
