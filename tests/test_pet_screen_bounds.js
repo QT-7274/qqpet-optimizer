@@ -5,6 +5,7 @@ const path = require("node:path");
 const {
   clampPetPosition,
   detectPetEdge,
+  pickDisplayWorkArea,
 } = require("../qq-pet-macos/src/windows/util/petScreenBounds.js");
 
 const MAC_WORK = { x: 0, y: 25, width: 1440, height: 875 };
@@ -100,10 +101,41 @@ const indexJs = fs.readFileSync(
   "utf8"
 );
 
+test("pickDisplayWorkArea uses overlapping bounds not top-left", () => {
+  const primary = { workArea: { x: 0, y: 25, width: 1920, height: 1055 } };
+  const secondary = { workArea: { x: -1920, y: 25, width: 1920, height: 1055 } };
+  const area = pickDisplayWorkArea(
+    { x: -50, y: 200, ...SIZE },
+    [primary, secondary]
+  );
+  assert.deepEqual(area, primary.workArea);
+});
+
+test("pickDisplayWorkArea keeps a second-display pet on that workArea", () => {
+  const primary = { workArea: { x: 0, y: 25, width: 1920, height: 1055 } };
+  const secondary = { workArea: { x: 1920, y: 25, width: 1920, height: 1055 } };
+  const area = pickDisplayWorkArea(
+    { x: 3000, y: 80, ...SIZE },
+    [primary, secondary]
+  );
+  assert.deepEqual(area, secondary.workArea);
+});
+
+test("pickDisplayWorkArea falls back to nearest workArea when off-screen", () => {
+  const primary = { workArea: { x: 0, y: 25, width: 1440, height: 875 } };
+  const area = pickDisplayWorkArea(
+    { x: 8000, y: 200, ...SIZE },
+    [primary]
+  );
+  assert.deepEqual(area, primary.workArea);
+});
+
 test("main move path clamps with petScreenBounds", () => {
   assert.match(mainJs, /petScreenBounds\.js/);
   assert.match(mainJs, /clampPetPosition/);
-  assert.match(mainJs, /getDisplayNearestPoint/);
+  assert.match(mainJs, /pickDisplayWorkArea/);
+  assert.match(mainJs, /getAllDisplays/);
+  assert.doesNotMatch(mainJs, /getDisplayNearestPoint/);
 });
 
 test("renderer maps edge to hideleft hideright via goNormal", () => {

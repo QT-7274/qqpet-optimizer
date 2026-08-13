@@ -61,5 +61,50 @@
     };
   }
 
-  return { clampPetPosition, detectPetEdge, workAreaFromDisplay };
+  function overlapArea(a, b) {
+    const width = Math.min(a.x + a.width, b.x + b.width) - Math.max(a.x, b.x);
+    const height = Math.min(a.y + a.height, b.y + b.height) - Math.max(a.y, b.y);
+    if (width <= 0 || height <= 0) return 0;
+    return width * height;
+  }
+
+  function distanceToRectSq(px, py, rect) {
+    const nearestX = clamp(px, rect.x, rect.x + rect.width);
+    const nearestY = clamp(py, rect.y, rect.y + rect.height);
+    const dx = px - nearestX;
+    const dy = py - nearestY;
+    return dx * dx + dy * dy;
+  }
+
+  function pickDisplayWorkArea(bounds, displays) {
+    const box = {
+      x: toNumber(bounds?.x, 0),
+      y: toNumber(bounds?.y, 0),
+      width: toNumber(bounds?.width, 0),
+      height: toNumber(bounds?.height, 0),
+    };
+    const list = Array.isArray(displays) ? displays : [];
+    let bestOverlap = null;
+    let bestOverlapArea = 0;
+    let nearest = { x: 0, y: 0, width: 0, height: 0 };
+    let nearestDist = Infinity;
+    const cx = box.x + box.width / 2;
+    const cy = box.y + box.height / 2;
+    for (let i = 0; i < list.length; i++) {
+      const area = workAreaFromDisplay(list[i]);
+      const overlap = overlapArea(box, area);
+      if (overlap > bestOverlapArea) {
+        bestOverlapArea = overlap;
+        bestOverlap = area;
+      }
+      const dist = distanceToRectSq(cx, cy, area);
+      if (dist < nearestDist) {
+        nearestDist = dist;
+        nearest = area;
+      }
+    }
+    return bestOverlap || nearest;
+  }
+
+  return { clampPetPosition, detectPetEdge, workAreaFromDisplay, pickDisplayWorkArea };
 });
