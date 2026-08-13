@@ -1,0 +1,70 @@
+# Forwards CodeAnt GitHub App review completion to a Cursor Automation webhook.
+# Cursor GitHub triggers drop bot/App reviews; this bypasses that filter.
+#
+# CodeAnt completion signals in this repo:
+# - First review: pull_request_review submitted by codeant-ai[bot]
+# - Manual re-review: top-level "CodeAnt AI finished running the review."
+# - Incremental review on a new SHA: edits the status comment to
+#   "Incremental review completed" (no new Submit review)
+name: Relay CodeAnt review to Cursor
+
+on:
+  pull_request_review:
+    types: [submitted]
+  issue_comment:
+    types: [created, edited]
+
+concurrency:
+  group: relay-codeant-${{ github.event.pull_request.number || github.event.issue.number }}
+  cancel-in-progress: false
+
+jobs:
+  relay:
+    if: |
+      (github.event_name == 'pull_request_review' &&
+        github.event.review.user.login == 'codeant-ai[bot]') ||
+      (github.event_name == 'issue_comment' &&
+        github.event.issue.pull_request &&
+        github.event.comment.user.login == 'codeant-ai[bot]' &&
+        (contains(github.event.comment.body, 'CodeAnt AI finished running the review') ||
+          contains(github.event.comment.body, 'Incremental review completed')))
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: read
+    steps:
+      - name: Ping Cursor webhook
+        env:
+          URL: ${{ secrets.CURSOR_AUTOMATION_WEBHOOK_URL }}
+          TOKEN: ${{ secrets.CURSOR_AUTOMATION_WEBHOOK_TOKEN }}
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          PR: ${{ github.event.pull_request.number || github.event.issue.number }}
+          REVIEW_URL: ${{ github.event.review.html_url || github.event.comment.html_url }}
+          SHA: ${{ github.event.pull_request.head.sha }}
+          EVENT_NAME: ${{ github.event_name }}
+        run: |
+          set -euo pipefail
+          if [ -z "${URL:-}" ] || [ -z "${TOKEN:-}" ]; then
+            echo "Missing CURSOR_AUTOMATION_WEBHOOK_URL or CURSOR_AUTOMATION_WEBHOOK_TOKEN"
+            exit 1
+          fi
+          if [ -z "${SHA:-}" ]; then
+            SHA="$(gh api "repos/${REPO}/pulls/${PR}" --jq .head.sha)"
+          fi
+          case "$TOKEN" in
+            Bearer\ *) AUTH="$TOKEN" ;;
+            *) AUTH="Bearer $TOKEN" ;;
+          esac
+          echo "Relaying ${EVENT_NAME} for PR ${PR} sha=${SHA}"
+          HTTP_CODE="$(
+            curl -sS -o /tmp/cursor-webhook-body.txt -w "%{http_code}" -X POST "$URL" \
+              -H "Authorization: $AUTH" \
+              -H "Content-Type: application/json" \
+              --data "{\"source\":\"codeant-ai\",\"repo\":\"${REPO}\",\"pr\":${PR},\"sha\":\"${SHA}\",\"reviewUrl\":\"${REVIEW_URL}\",\"event\":\"${EVENT_NAME}\"}"
+          )"
+          echo "Cursor webhook HTTP ${HTTP_CODE}"
+          if [ "${HTTP_CODE}" -lt 200 ] || [ "${HTTP_CODE}" -ge 300 ]; then
+            cat /tmp/cursor-webhook-body.txt
+            exit 1
+          fi
