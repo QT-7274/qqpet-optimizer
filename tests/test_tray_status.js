@@ -133,6 +133,24 @@ test("changeTraysIcon resolves status instead of last-write-wins", () => {
   assert.match(mainJs, /resolveTrayStatus/);
 });
 
+test("mounted tray init routes tooltip through changeTraysIcon", () => {
+  assert.match(
+    mainJs,
+    /petInfo:e,bd:n\.bd\}\),changeTraysIcon\(\{\}\)/
+  );
+});
+
+test("owner/name pet-info updates keep resolved status tooltip", () => {
+  assert.match(
+    mainJs,
+    /changeInfo\?\.name\)&&n\.menu\?\.setTrayToolTip\(trayStatus\.resolveTrayStatus\(e\)\.tip\)/
+  );
+  assert.doesNotMatch(
+    mainJs,
+    /setTrayToolTip\(e\.info\.host\+"家的"\+e\.info\.name\)/
+  );
+});
+
 test("menu-bar-tray-priority.PRIORITY.3 status window still lists every required field", () => {
   const index = fs.readFileSync(
     path.join(__dirname, "../qq-pet-macos/src/windows/popups/stateInfo/index.js"),
