@@ -1,0 +1,21 @@
+feature:
+  name: tray-stateinfo-position
+  product: qqpet-optimizer
+  description: 修复 macOS Menu Bar 单击后 stateInfo 状态窗出现在屏幕外，使其贴着 Tray 图标并完整落在当前显示器 workArea 内。
+
+components:
+  POSITION:
+    requirements:
+      1: 单击 macOS 顶部 Menu Bar 的宠物 Tray 图标后，stateInfo 应出现在图标下方。
+      2: stateInfo 窗口必须完整位于 Tray 图标所在显示器的 workArea 内，左右边缘不得越界。
+      3: 多显示器时，窗口不得落到其他显示器。
+      4: Windows 与 Linux 在底部任务栏时应向上弹出 stateInfo，不得因本次修复改为始终向下打开。
+  TOGGLE:
+    requirements:
+      1: 再次单击同一 Tray 图标应关闭 stateInfo。
+      2: 已存在的 stateInfo 被再次打开时，必须移到当前计算出的可见位置并显示，不得留在屏幕外。
+
+constraints:
+  TESTS:
+    requirements:
+      1: 坐标计算应为可单测的纯函数，覆盖 macOS 顶部、Windows 底部、左右边缘和第二显示器。
