@@ -2,10 +2,14 @@
 # Cursor GitHub triggers drop bot/App reviews; this bypasses that filter.
 #
 # CodeAnt completion signals in this repo:
-# - First review: pull_request_review submitted by codeant-ai[bot]
-# - Manual re-review: top-level "CodeAnt AI finished running the review."
-# - Incremental review on a new SHA: edits the status comment to
-#   "Incremental review completed" (no new Submit review)
+# - First review with inline comments: pull_request_review submitted by codeant-ai[bot]
+# - First review with no inlines: Status comment edited to "✅ Reviewed your PR"
+# - Incremental review on a new SHA: Status comment edited to
+#   "✅ Incremental review completed" (often no new Submit review)
+# - Legacy (early PRs): "CodeAnt AI finished running the review."
+#
+# issue_comment completions are skipped when codeant-ai already submitted a
+# review on the same SHA, so the Status edit does not double-ping Cursor.
 name: Relay CodeAnt review to Cursor
 
 on:
@@ -27,7 +31,8 @@ jobs:
         github.event.issue.pull_request &&
         github.event.comment.user.login == 'codeant-ai[bot]' &&
         (contains(github.event.comment.body, 'CodeAnt AI finished running the review') ||
-          contains(github.event.comment.body, 'Incremental review completed')))
+          contains(github.event.comment.body, 'Incremental review completed') ||
+          contains(github.event.comment.body, '✅ Reviewed your PR')))
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -51,6 +56,17 @@ jobs:
           fi
           if [ -z "${SHA:-}" ]; then
             SHA="$(gh api "repos/${REPO}/pulls/${PR}" --jq .head.sha)"
+          fi
+          if [ "$EVENT_NAME" = "issue_comment" ]; then
+            REVIEW_COUNT="$(
+              gh api "repos/${REPO}/pulls/${PR}/reviews" \
+                --jq --arg sha "$SHA" \
+                '[.[] | select(.user.login == "codeant-ai[bot]" and .commit_id == $sha)] | length'
+            )"
+            if [ "$REVIEW_COUNT" != "0" ]; then
+              echo "Skip status comment; pull_request_review already covers ${SHA:0:7}"
+              exit 0
+            fi
           fi
           case "$TOKEN" in
             Bearer\ *) AUTH="$TOKEN" ;;
