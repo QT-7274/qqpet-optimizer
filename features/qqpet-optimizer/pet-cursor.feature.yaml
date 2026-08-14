@@ -1,0 +1,23 @@
+feature:
+  name: pet-cursor
+  product: qqpet-optimizer
+  description: 仅在企鹅或宠物功能窗上显示手套光标，并藏起系统箭头；桌面、菜单栏、Dock 仍用系统光标。
+
+components:
+  CURSOR:
+    requirements:
+      1: 空闲与按下热点须与 CUR 文件一致；透明窗不得依赖系统箭头。
+      2: ruffle-player 不得强制 pointer 光标，鼠标事件须穿透到 #move。
+      3: 显示宠物光标时不得同时露出 macOS 系统箭头，两者不得叠在一起。
+      3-1: 覆盖层手套图须能从 overlay HTML 加载到 PNG。
+      3-2: hover 时也须藏起系统箭头，不能只在按下左键时消失；须在 Electron 进程内按可见性回藏。
+      4: 仅当鼠标在企鹅精灵或宠物功能窗（喂食、商城、菜单等）内时使用宠物光标。
+      4-1: 鼠标穿透窗（control、rightMenu、floatStyle、urlWindow）不得用整窗 bounds；命中区为可见可点控件的并集矩形。
+      4-2: 企鹅命中盒须内缩 SWF 舞台空白，避免离角色很远仍变成手套。
+      4-3: 功能菜单控件之间的间隙须保持宠物光标，避免快速划过时与系统箭头闪烁。
+      5: 鼠标在桌面空白处、菜单栏或 Dock 时，使用系统光标，不显示宠物光标。
+
+constraints:
+  TESTS:
+    requirements:
+      1: 上述行为应有对应单元测试，并在测试名或注释中引用完整 ACID。

@@ -6,6 +6,10 @@ const {
   installFlashPlayerApi,
   createPetEmbed,
   describePlayer,
+  getRufflePetConfig,
+  hideRuffleChrome,
+  changePetSwf,
+  awakenRufflePlayer,
 } = require("../qq-pet-macos/src/windows/util/pet/flashPlayerAdapter.js");
 
 function fakeRuffle({ numFrames = 24, frameRate = 12, src = "Stand.swf" } = {}) {
@@ -36,7 +40,7 @@ function fakeRuffle({ numFrames = 24, frameRate = 12, src = "Stand.swf" } = {}) 
 
 // pet-swf-runtime.FLASH_API.1
 test("pet-swf-runtime.FLASH_API.1 Ruffle player gets CurrentFrame TotalFrames IsPlaying", () => {
-  const { el } = fakeRuffle();
+  const { el, calls } = fakeRuffle();
   let now = 0;
   installFlashPlayerApi(el, { now: () => now });
 
@@ -51,6 +55,7 @@ test("pet-swf-runtime.FLASH_API.1 Ruffle player gets CurrentFrame TotalFrames Is
   now = 10_000;
   assert.equal(el.CurrentFrame(), 23);
   assert.equal(el.IsPlaying(), false);
+  assert.equal(calls.includes("pause"), false);
 });
 
 // pet-swf-runtime.FLASH_API.2
@@ -142,6 +147,7 @@ test("swfPet polls through the Flash API adapter", () => {
   assert.match(swfPet, /flashPlayerAdapter/);
   assert.match(swfPet, /installFlashPlayerApi/);
   assert.match(swfPet, /createPetEmbed/);
+  assert.doesNotMatch(swfPet, /changePetSwf/);
 });
 
 test("main window loads the adapter before swfPet", () => {
@@ -149,4 +155,133 @@ test("main window loads the adapter before swfPet", () => {
     mainJs,
     /jsFiles=\["\.\/util\/move\.js","\.\/util\/pet\/flashPlayerAdapter\.js","\.\/util\/pet\/swfPet\.js"/
   );
+});
+
+const appHtml = fs.readFileSync(
+  path.join(__dirname, "../qq-pet-macos/src/windows/app.html"),
+  "utf8"
+);
+
+// pet-ruffle-chrome.SPLASH.1
+test("pet-ruffle-chrome.SPLASH.1 config skips splash play overlay and blue stage", () => {
+  const cfg = getRufflePetConfig();
+  assert.equal(cfg.autoplay, "on");
+  assert.equal(cfg.unmuteOverlay, "hidden");
+  assert.equal(cfg.splashScreen, false);
+  assert.equal(cfg.preloader, false);
+  assert.equal(cfg.wmode, "transparent");
+  assert.equal(cfg.letterbox, "off");
+  assert.equal(cfg.backgroundColor, null);
+});
+
+test("pet-ruffle-chrome.SPLASH.1 window allows autoplay without a gesture", () => {
+  const windowJs = fs.readFileSync(
+    path.join(__dirname, "../qq-pet-macos/src/windows/window.js"),
+    "utf8"
+  );
+  assert.match(windowJs, /autoplayPolicy:"no-user-gesture-required"/);
+});
+
+test("pet-ruffle-chrome.SPLASH.1 app.html applies that config before ruffle.js", () => {
+  const splashAt = appHtml.indexOf("splashScreen");
+  const preloaderAt = appHtml.indexOf("preloader");
+  const ruffleAt = appHtml.indexOf('src="./js/ruffle/ruffle.js"');
+  assert.match(appHtml, /splashScreen:\s*false/);
+  assert.match(appHtml, /preloader:\s*false/);
+  assert.ok(splashAt >= 0 && splashAt < ruffleAt);
+  assert.ok(preloaderAt >= 0 && preloaderAt < ruffleAt);
+});
+
+test("pet-ruffle-chrome.SWAP.1 changePetSwf does not call load which destroys WebGL", () => {
+  const loads = [];
+  const el = {
+    tagName: "RUFFLE-PLAYER",
+    metadata: { numFrames: 12, frameRate: 12 },
+    PercentLoaded() {
+      return 100;
+    },
+    load(opts) {
+      loads.push(opts);
+    },
+    setAttribute() {},
+    getAttribute() {
+      return null;
+    },
+  };
+  const result = changePetSwf(el, { src: "Hide_left.swf", wmode: "transparent" });
+  assert.equal(result.replaced, true);
+  assert.equal(result.el.tagName, "EMBED");
+  assert.equal(result.el.getAttribute("src"), "Hide_left.swf");
+  assert.equal(loads.length, 0);
+});
+
+test("pet-ruffle-chrome.SWAP.1 missing load still builds a fresh embed", () => {
+  const result = changePetSwf(
+    { tagName: "EMBED" },
+    { id: "pet", src: "Stand.swf" }
+  );
+  assert.equal(result.replaced, true);
+  assert.equal(result.el.tagName, "EMBED");
+  assert.equal(result.el.getAttribute("src"), "Stand.swf");
+});
+
+test("pet-ruffle-chrome.SPLASH.1 hideRuffleChrome hides play-button and splash in shadow DOM", () => {
+  const appended = [];
+  const hidden = [];
+  const player = {
+    shadowRoot: {
+      querySelector(sel) {
+        if (sel === "[data-pet-ruffle-chrome]") return null;
+        if (sel === "#play-button") {
+          return {
+            style: {
+              setProperty(name, value, priority) {
+                hidden.push(sel + ":" + value + ":" + priority);
+              },
+            },
+            classList: { add() {} },
+          };
+        }
+        return null;
+      },
+      appendChild(node) {
+        appended.push(node);
+      },
+    },
+  };
+  hideRuffleChrome(player);
+  const css = appended.map((n) => n.textContent || "").join("\n");
+  assert.match(css, /play-button/);
+  assert.match(css, /splash-screen/);
+  assert.match(css, /unmute-overlay/);
+  assert.ok(hidden.some((row) => row.includes("play-button")));
+});
+
+// pet-ruffle-chrome.SPLASH.2
+test("pet-ruffle-chrome.SPLASH.2 last frame does not native-pause which would show play button", () => {
+  const { el, calls } = fakeRuffle({ numFrames: 12, frameRate: 12 });
+  let now = 0;
+  installFlashPlayerApi(el, { now: () => now });
+  now = 2000;
+  assert.equal(el.CurrentFrame(), 11);
+  assert.equal(el.IsPlaying(), false);
+  assert.equal(calls.includes("pause"), false);
+});
+
+test("pet-ruffle-chrome.SPLASH.2 awakenRufflePlayer plays to dismiss overlay", () => {
+  const calls = [];
+  const player = {
+    tagName: "RUFFLE-PLAYER",
+    play() {
+      calls.push("play");
+    },
+    shadowRoot: {
+      querySelector() {
+        return null;
+      },
+      appendChild() {},
+    },
+  };
+  awakenRufflePlayer(player);
+  assert.deepEqual(calls, ["play"]);
 });

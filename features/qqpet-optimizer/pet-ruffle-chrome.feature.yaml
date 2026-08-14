@@ -1,0 +1,18 @@
+feature:
+  name: pet-ruffle-chrome
+  product: qqpet-optimizer
+  description: 去掉 Ruffle 默认蓝底、预加载和播放按钮，换 SWF 时不得销毁 WebGL 导致宠物消失。
+
+components:
+  SPLASH:
+    requirements:
+      1: Ruffle 配置须关闭 splash/preloader、开启 autoplay，且舞台背景透明，不得出现默认播放按钮或蓝底。
+      2: 合成时间轴走到最后一帧时，不得调用 Ruffle pause（pause 会显示播放按钮）；StopPlay 若暂停播放器，须立刻藏起播放按钮。
+  SWAP:
+    requirements:
+      1: 更换宠物 SWF 时须新建 embed，禁止对已有 ruffle-player 调用 load()。
+
+constraints:
+  TESTS:
+    requirements:
+      1: 上述行为应有对应单元测试，并在测试名或注释中引用完整 ACID。

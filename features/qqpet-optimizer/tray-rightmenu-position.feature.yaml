@@ -1,0 +1,18 @@
+feature:
+  name: tray-rightmenu-position
+  product: qqpet-optimizer
+  description: 任务栏右键菜单与左键状态窗使用同一套 workArea 定位；宠物身上右键仍跟宠物。
+
+components:
+  TRAY:
+    requirements:
+      1: 右键 macOS 顶部 Menu Bar 的宠物 Tray 图标后，菜单窗口应与左键 stateInfo 同一套 workArea 规则。
+      2: 任务栏右键时，可视菜单须贴着窗口顶部（与 stateInfo 同一原点），不得钉在窗口底部。
+  PET:
+    requirements:
+      1: 在宠物身上右键（followMain）时，菜单仍使用相对宠物的偏移，不得改成 Tray workArea 规则。
+
+constraints:
+  TESTS:
+    requirements:
+      1: 坐标与布局应为可单测的纯函数，并在测试名或注释中引用完整 ACID。
