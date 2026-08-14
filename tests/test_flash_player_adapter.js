@@ -144,7 +144,8 @@ const mainJs = fs.readFileSync(
 test("swfPet polls through the Flash API adapter", () => {
   assert.match(swfPet, /flashPlayerAdapter/);
   assert.match(swfPet, /installFlashPlayerApi/);
-  assert.match(swfPet, /changePetSwf/);
+  assert.match(swfPet, /createPetEmbed/);
+  assert.doesNotMatch(swfPet, /changePetSwf/);
 });
 
 test("main window loads the adapter before swfPet", () => {
@@ -181,7 +182,7 @@ test("pet-ruffle-chrome.SPLASH.1 app.html applies that config before ruffle.js",
   assert.ok(preloaderAt >= 0 && preloaderAt < ruffleAt);
 });
 
-test("pet-ruffle-chrome.SWAP.1 changeSwf reuses ruffle load instead of a new player", () => {
+test("pet-ruffle-chrome.SWAP.1 changePetSwf does not call load which destroys WebGL", () => {
   const loads = [];
   const el = {
     tagName: "RUFFLE-PLAYER",
@@ -193,18 +194,15 @@ test("pet-ruffle-chrome.SWAP.1 changeSwf reuses ruffle load instead of a new pla
       loads.push(opts);
     },
     setAttribute() {},
-    getAttribute(name) {
-      return name === "src" ? "Stand.swf" : null;
+    getAttribute() {
+      return null;
     },
   };
   const result = changePetSwf(el, { src: "Hide_left.swf", wmode: "transparent" });
-  assert.equal(result.replaced, false);
-  assert.equal(result.el, el);
-  assert.equal(loads.length, 1);
-  assert.equal(loads[0].url, "Hide_left.swf");
-  assert.equal(loads[0].splashScreen, false);
-  assert.equal(loads[0].autoplay, "on");
-  assert.equal(loads[0].wmode, "transparent");
+  assert.equal(result.replaced, true);
+  assert.equal(result.el.tagName, "EMBED");
+  assert.equal(result.el.getAttribute("src"), "Hide_left.swf");
+  assert.equal(loads.length, 0);
 });
 
 test("pet-ruffle-chrome.SWAP.1 missing load still builds a fresh embed", () => {
@@ -215,49 +213,6 @@ test("pet-ruffle-chrome.SWAP.1 missing load still builds a fresh embed", () => {
   assert.equal(result.replaced, true);
   assert.equal(result.el.tagName, "EMBED");
   assert.equal(result.el.getAttribute("src"), "Stand.swf");
-});
-
-test("pet-ruffle-chrome.SWAP.1 load resets the Flash API so the next SWF is not finished", () => {
-  const { el } = fakeRuffle({ numFrames: 24, frameRate: 12 });
-  el.load = function () {
-    this.metadata = null;
-  };
-  let now = 0;
-  installFlashPlayerApi(el, { now: () => now });
-  now = 20_000;
-  assert.equal(el.CurrentFrame(), 23);
-  changePetSwf(el, { src: "Eat1.swf" }, { now: () => now });
-  assert.equal(el.CurrentFrame(), -1);
-  assert.equal(el.TotalFrames(), 0);
-});
-
-test("pet-ruffle-chrome.SWAP.1 rejected load promise does not become unhandled", async () => {
-  const rejections = [];
-  function onUnhandled(reason) {
-    rejections.push(reason);
-  }
-  process.on("unhandledRejection", onUnhandled);
-  try {
-    const el = {
-      tagName: "RUFFLE-PLAYER",
-      load() {
-        return Promise.reject(new Error("missing swf"));
-      },
-      setAttribute() {},
-    };
-    const result = changePetSwf(el, { src: "Missing.swf" });
-    assert.equal(result.replaced, false);
-    assert.equal(result.el, el);
-    await new Promise(function (resolve) {
-      setImmediate(resolve);
-    });
-    await new Promise(function (resolve) {
-      setImmediate(resolve);
-    });
-    assert.equal(rejections.length, 0);
-  } finally {
-    process.off("unhandledRejection", onUnhandled);
-  }
 });
 
 test("pet-ruffle-chrome.SPLASH.1 hideRuffleChrome hides play-button and splash in shadow DOM", () => {
@@ -277,8 +232,4 @@ test("pet-ruffle-chrome.SPLASH.1 hideRuffleChrome hides play-button and splash i
   assert.match(css, /play-button/);
   assert.match(css, /splash-screen/);
   assert.match(css, /unmute-overlay/);
-});
-
-test("swfPet changeSwf uses changePetSwf", () => {
-  assert.match(swfPet, /changePetSwf/);
 });

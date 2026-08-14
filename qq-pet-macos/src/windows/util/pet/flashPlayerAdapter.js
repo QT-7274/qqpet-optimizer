@@ -100,8 +100,7 @@
       style.setAttribute("data-pet-ruffle-chrome", "1");
     }
     style.textContent =
-      "#play-button,#splash-screen,#unmute-overlay{display:none!important}" +
-      "#container{background:transparent!important}";
+      "#play-button,#splash-screen,#unmute-overlay{display:none!important}";
     root.appendChild(style);
     return player;
   }
@@ -124,44 +123,19 @@
     return el;
   }
 
-  function resetFlashApiState(el, nowFn) {
-    if (!el || !el.__flashApiState) return el;
-    const now = nowFn || Date.now;
-    el.__flashApiState.startedAt = now();
-    el.__flashApiState.gotoFrame = 0;
-    el.__flashApiState.playing = true;
-    el.__flashApiState.pausedAt = null;
-    el.__flashApiState.armed = false;
-    return el;
-  }
-
   function changePetSwf(el, attributes, options) {
     // pet-ruffle-chrome.SWAP.1
+    // Do not call ruffle-player.load(): it destroy()s the WASM/WebGL
+    // instance and the pet vanishes in a transparent macOS window.
     const attrs = attributes || {};
-    const src = attrs.src || attrs.movie;
-    const player = resolvePlayer(el);
     applyRufflePetConfig(
       options && options.global
         ? options.global
-        : typeof globalThis !== "undefined"
+        : typeof globalThis !== "undefined" && globalThis.window
           ? globalThis
           : null
     );
-    if (player && typeof player.load === "function" && src) {
-      const cfg = Object.assign({}, getRufflePetConfig(), { url: src });
-      const loaded = player.load(cfg);
-      if (loaded && typeof loaded.then === "function") {
-        loaded.then(function () {}, function () {});
-      }
-      if (el && typeof el.setAttribute === "function") {
-        Object.keys(attrs).forEach(function (key) {
-          if (attrs[key] != null) el.setAttribute(key, attrs[key]);
-        });
-      }
-      resetFlashApiState(el, options && options.now);
-      hideRuffleChrome(player);
-      return { el: el, replaced: false };
-    }
+    hideRuffleChrome(resolvePlayer(el));
     return { el: createPetEmbed(attrs), replaced: true };
   }
 
