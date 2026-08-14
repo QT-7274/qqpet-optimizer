@@ -26,15 +26,15 @@ body {
   /* opacity: 0.4; */
   /* padding: 30px; */
   user-select: none;
-  cursor: url("../../assets/img_res/hand/default/normal.cur"), default;
+  cursor: url("../../assets/img_res/hand/default/normal.cur"), url("../../assets/img_res/hand/default/normal.png") 4 12, default;
   position: relative;
 }
 #move:active {
-  cursor: url("../../assets/img_res/hand/default/press.cur"), default;
+  cursor: url("../../assets/img_res/hand/default/press.cur"), url("../../assets/img_res/hand/default/press.png") 6 15, default;
 }
 #pet, ruffle-player, ruffle-player * {
   /* opacity: 0.2; */
-  cursor: pointer !important;
+  cursor: inherit;
   width: 100%;
   height: 100%;
   z-index: 1;
