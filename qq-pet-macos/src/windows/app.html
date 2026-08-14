@@ -36,6 +36,10 @@
         /* Ruffle: 让鼠标事件穿透到下层 #move div */
         ruffle-player {
             pointer-events: none !important;
+            --ruffle-blue: transparent;
+            --splash-screen-background: transparent;
+            --preloader-background: transparent;
+            background-color: transparent !important;
         }
     </style>
     <script>
@@ -43,6 +47,9 @@
         window.RufflePlayer.config = {
             autoplay: "on",
             unmuteOverlay: "hidden",
+            splashScreen: false,
+            preloader: false,
+            backgroundColor: null,
             warnOnUnsupportedContent: false,
             polyfills: true,
             letterbox: "off",

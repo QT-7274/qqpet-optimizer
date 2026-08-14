@@ -35,12 +35,17 @@ test("pet-cursor.CURSOR.1 idle and press hotspots match the CUR files", () => {
 test("pet-cursor.CURSOR.1 macOS CSS lists PNG hotspot then does not use pointer", () => {
   assert.match(
     css,
-    /#move\s*\{[^}]*cursor:\s*url\("\.\.\/\.\.\/assets\/img_res\/hand\/default\/normal\.cur"\),\s*url\("\.\.\/\.\.\/assets\/img_res\/hand\/default\/normal\.png"\) 4 12,/
+    /#move\s*\{[^}]*cursor:\s*url\("\.\.\/\.\.\/assets\/img_res\/hand\/default\/normal\.png"\) 4 12,\s*url\("\.\.\/\.\.\/assets\/img_res\/hand\/default\/normal\.cur"\),/
   );
   assert.match(
     css,
-    /#move:active\s*\{[^}]*cursor:\s*url\("\.\.\/\.\.\/assets\/img_res\/hand\/default\/press\.cur"\),\s*url\("\.\.\/\.\.\/assets\/img_res\/hand\/default\/press\.png"\) 6 15,/
+    /#move:active\s*\{[^}]*cursor:\s*url\("\.\.\/\.\.\/assets\/img_res\/hand\/default\/press\.png"\) 6 15,\s*url\("\.\.\/\.\.\/assets\/img_res\/hand\/default\/press\.cur"\),/
   );
+});
+
+test("pet-ruffle-chrome.SPLASH.1 ruffle host does not keep the default blue stage", () => {
+  assert.match(css, /--ruffle-blue:\s*transparent/);
+  assert.match(css, /--splash-screen-background:\s*transparent/);
 });
 
 // pet-cursor.CURSOR.2

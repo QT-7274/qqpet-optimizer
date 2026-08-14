@@ -26,11 +26,11 @@ body {
   /* opacity: 0.4; */
   /* padding: 30px; */
   user-select: none;
-  cursor: url("../../assets/img_res/hand/default/normal.cur"), url("../../assets/img_res/hand/default/normal.png") 4 12, default;
+  cursor: url("../../assets/img_res/hand/default/normal.png") 4 12, url("../../assets/img_res/hand/default/normal.cur"), default !important;
   position: relative;
 }
 #move:active {
-  cursor: url("../../assets/img_res/hand/default/press.cur"), url("../../assets/img_res/hand/default/press.png") 6 15, default;
+  cursor: url("../../assets/img_res/hand/default/press.png") 6 15, url("../../assets/img_res/hand/default/press.cur"), default !important;
 }
 #pet, ruffle-player, ruffle-player * {
   /* opacity: 0.2; */
@@ -43,6 +43,10 @@ body {
   top: 0;
   transition: all 0.08s !important;
   pointer-events: none !important;
+  --ruffle-blue: transparent;
+  --splash-screen-background: transparent;
+  --preloader-background: transparent;
+  background-color: transparent !important;
 }
 #move {
   pointer-events: auto !important;
