@@ -149,7 +149,10 @@
     );
     if (player && typeof player.load === "function" && src) {
       const cfg = Object.assign({}, getRufflePetConfig(), { url: src });
-      player.load(cfg);
+      const loaded = player.load(cfg);
+      if (loaded && typeof loaded.then === "function") {
+        loaded.then(function () {}, function () {});
+      }
       if (el && typeof el.setAttribute === "function") {
         Object.keys(attrs).forEach(function (key) {
           if (attrs[key] != null) el.setAttribute(key, attrs[key]);

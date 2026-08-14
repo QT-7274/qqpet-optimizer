@@ -231,6 +231,35 @@ test("pet-ruffle-chrome.SWAP.1 load resets the Flash API so the next SWF is not 
   assert.equal(el.TotalFrames(), 0);
 });
 
+test("pet-ruffle-chrome.SWAP.1 rejected load promise does not become unhandled", async () => {
+  const rejections = [];
+  function onUnhandled(reason) {
+    rejections.push(reason);
+  }
+  process.on("unhandledRejection", onUnhandled);
+  try {
+    const el = {
+      tagName: "RUFFLE-PLAYER",
+      load() {
+        return Promise.reject(new Error("missing swf"));
+      },
+      setAttribute() {},
+    };
+    const result = changePetSwf(el, { src: "Missing.swf" });
+    assert.equal(result.replaced, false);
+    assert.equal(result.el, el);
+    await new Promise(function (resolve) {
+      setImmediate(resolve);
+    });
+    await new Promise(function (resolve) {
+      setImmediate(resolve);
+    });
+    assert.equal(rejections.length, 0);
+  } finally {
+    process.off("unhandledRejection", onUnhandled);
+  }
+});
+
 test("pet-ruffle-chrome.SPLASH.1 hideRuffleChrome hides play-button and splash in shadow DOM", () => {
   const appended = [];
   const player = {
