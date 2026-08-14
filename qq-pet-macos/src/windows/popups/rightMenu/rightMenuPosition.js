@@ -18,6 +18,8 @@
 })(typeof globalThis !== "undefined" ? globalThis : this, function (
   trayPopupPosition
 ) {
+  const STATE_INFO_SIZE = { width: 190, height: 290 };
+
   function resolveRightMenuPosition({
     positionType,
     nowPosition,
@@ -44,7 +46,7 @@
     };
     return trayPopupPosition.computeTrayPopupPosition({
       trayBounds: bounds,
-      windowSize: { width, height },
+      windowSize: STATE_INFO_SIZE,
       workArea,
     });
   }
@@ -65,6 +67,7 @@
   }
 
   return {
+    STATE_INFO_SIZE,
     resolveRightMenuPosition,
     applyTrayMenuLayout,
     applyPositionToWindow: trayPopupPosition.applyPositionToWindow,

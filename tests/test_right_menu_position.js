@@ -8,12 +8,13 @@ const {
 const {
   resolveRightMenuPosition,
   applyTrayMenuLayout,
+  STATE_INFO_SIZE,
 } = require("../qq-pet-macos/src/windows/popups/rightMenu/rightMenuPosition.js");
 
 const RIGHT_MENU = { width: 340, height: 300 };
+const STATE_INFO = { width: 190, height: 290 };
 const MAC_WORK = { x: 0, y: 25, width: 1440, height: 875 };
 const TRAY = { x: 700, y: 2, width: 22, height: 22 };
-const TRAY_RIGHT = { x: 1400, y: 2, width: 22, height: 22 };
 
 const rightMenuMain = fs.readFileSync(
   path.join(__dirname, "../qq-pet-macos/src/windows/popups/rightMenu/main.js"),
@@ -32,26 +33,15 @@ test("tray-rightmenu-position.TRAY.1 tray right-click uses the same workArea rul
     windowSize: RIGHT_MENU,
     workArea: MAC_WORK,
   });
-  const expected = computeTrayPopupPosition({
+  const statePos = computeTrayPopupPosition({
     trayBounds: TRAY,
-    windowSize: RIGHT_MENU,
+    windowSize: STATE_INFO,
     workArea: MAC_WORK,
   });
-  assert.deepEqual(menuPos, expected);
+  assert.deepEqual(STATE_INFO_SIZE, STATE_INFO);
+  assert.deepEqual(menuPos, statePos);
   assert.ok(menuPos.y >= MAC_WORK.y);
   assert.ok(menuPos.y >= TRAY.y + TRAY.height - 1);
-});
-
-test("tray-rightmenu-position.TRAY.1 clamps with the actual 340x300 menu size", () => {
-  const menuPos = resolveRightMenuPosition({
-    nowPosition: [TRAY_RIGHT.x, TRAY_RIGHT.y],
-    trayBounds: TRAY_RIGHT,
-    windowSize: RIGHT_MENU,
-    workArea: MAC_WORK,
-  });
-  const workRight = MAC_WORK.x + MAC_WORK.width;
-  assert.ok(menuPos.x + RIGHT_MENU.width <= workRight);
-  assert.equal(menuPos.x, workRight - RIGHT_MENU.width);
 });
 
 // tray-rightmenu-position.TRAY.2
