@@ -89,12 +89,33 @@
 
   function hideRuffleChrome(player) {
     // pet-ruffle-chrome.SPLASH.1
+    // pet-ruffle-chrome.SPLASH.2
     const root = player && player.shadowRoot;
-    if (!root || typeof root.appendChild !== "function") return player;
-    if (typeof root.querySelector === "function") {
-      const existing = root.querySelector("[data-pet-ruffle-chrome]");
-      if (existing) return player;
+    if (!root) return player;
+
+    function hideEl(sel) {
+      if (typeof root.querySelector !== "function") return;
+      const el = root.querySelector(sel);
+      if (!el) return;
+      if (el.style && typeof el.style.setProperty === "function") {
+        el.style.setProperty("display", "none", "important");
+      } else if (el.style) {
+        el.style.display = "none";
+      }
+      if (el.classList && typeof el.classList.add === "function") {
+        el.classList.add("hidden");
+      }
     }
+    hideEl("#play-button");
+    hideEl("#splash-screen");
+    hideEl("#unmute-overlay");
+
+    if (typeof root.appendChild !== "function") return player;
+    const existing =
+      typeof root.querySelector === "function"
+        ? root.querySelector("[data-pet-ruffle-chrome]")
+        : null;
+    if (existing) return player;
     const style = createElement("style");
     if (typeof style.setAttribute === "function") {
       style.setAttribute("data-pet-ruffle-chrome", "1");
@@ -103,6 +124,44 @@
       "#play-button,#splash-screen,#unmute-overlay{display:none!important}";
     root.appendChild(style);
     return player;
+  }
+
+  function isRufflePlayer(node) {
+    if (!node || !node.tagName) return false;
+    return String(node.tagName).toLowerCase() === "ruffle-player";
+  }
+
+  function awakenRufflePlayer(player) {
+    hideRuffleChrome(player);
+    if (player && typeof player.play === "function") {
+      try {
+        player.play();
+      } catch (err) {}
+    }
+    return player;
+  }
+
+  function watchRufflePetPlayers(doc) {
+    if (!doc) return;
+    function visit(node) {
+      if (isRufflePlayer(node)) awakenRufflePlayer(node);
+      if (node && typeof node.querySelectorAll === "function") {
+        const list = node.querySelectorAll("ruffle-player");
+        for (let i = 0; i < list.length; i++) visit(list[i]);
+      }
+    }
+    visit(doc);
+    if (typeof MutationObserver !== "function") return;
+    const root = doc.body || doc.documentElement || doc;
+    if (!root || typeof root.appendChild !== "function") return;
+    const obs = new MutationObserver(function (mutations) {
+      for (let i = 0; i < mutations.length; i++) {
+        const nodes = mutations[i].addedNodes;
+        if (!nodes) continue;
+        for (let j = 0; j < nodes.length; j++) visit(nodes[j]);
+      }
+    });
+    obs.observe(root, { childList: true, subtree: true });
   }
 
   function createPetEmbed(attributes, documentRef) {
@@ -214,8 +273,10 @@
         if (state.playing) {
           state.playing = false;
           state.pausedAt = now();
-          const p = player();
-          if (typeof p.pause === "function") p.pause();
+          // pet-ruffle-chrome.SPLASH.2
+          // Ruffle pause() sets #play-button display:block. Keep the
+          // synthetic timeline stopped without pausing the player.
+          hideRuffleChrome(player());
         }
         return last;
       }
@@ -259,6 +320,7 @@
       state.pausedAt = now();
       const p = player();
       if (typeof p.pause === "function") p.pause();
+      hideRuffleChrome(p);
       return true;
     };
     el.GotoFrame = function (frame) {
@@ -305,6 +367,7 @@
 
   if (typeof globalThis !== "undefined" && globalThis.window) {
     applyRufflePetConfig(globalThis);
+    if (globalThis.document) watchRufflePetPlayers(globalThis.document);
   }
 
   return {
@@ -315,5 +378,7 @@
     applyRufflePetConfig,
     hideRuffleChrome,
     changePetSwf,
+    watchRufflePetPlayers,
+    awakenRufflePlayer,
   };
 });

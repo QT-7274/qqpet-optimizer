@@ -2,6 +2,7 @@
  * Tray right-click menu uses the same workArea placement as left-click stateInfo.
  * Pet-local right-click (followMain) keeps the offset next to the pet.
  * tray-rightmenu-position.TRAY.1
+ * tray-rightmenu-position.TRAY.2
  * tray-rightmenu-position.PET.1
  */
 (function (root, factory) {
@@ -17,6 +18,8 @@
 })(typeof globalThis !== "undefined" ? globalThis : this, function (
   trayPopupPosition
 ) {
+  const STATE_INFO_SIZE = { width: 190, height: 290 };
+
   function resolveRightMenuPosition({
     positionType,
     nowPosition,
@@ -43,13 +46,30 @@
     };
     return trayPopupPosition.computeTrayPopupPosition({
       trayBounds: bounds,
-      windowSize: { width, height },
+      windowSize: STATE_INFO_SIZE,
       workArea,
     });
   }
 
+  function applyTrayMenuLayout(vm) {
+    // tray-rightmenu-position.TRAY.2
+    if (!vm || vm.positionType === "followMain") return vm;
+    vm.menuMainStyle = Object.assign({}, vm.menuMainStyle || {}, {
+      position: "fixed",
+      top: "0px",
+      left: "0px",
+      bottom: "auto",
+    });
+    vm.sunBkBodyStyle = Object.assign({}, vm.sunBkBodyStyle || {}, {
+      transform: "translateX(100%) translateY(-40%)",
+    });
+    return vm;
+  }
+
   return {
+    STATE_INFO_SIZE,
     resolveRightMenuPosition,
+    applyTrayMenuLayout,
     applyPositionToWindow: trayPopupPosition.applyPositionToWindow,
   };
 });

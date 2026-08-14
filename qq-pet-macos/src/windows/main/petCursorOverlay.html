@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <style>
+    html, body {
+      margin: 0;
+      background: transparent;
+      overflow: hidden;
+      cursor: none;
+    }
+    img {
+      width: 32px;
+      height: 32px;
+      pointer-events: none;
+      image-rendering: pixelated;
+    }
+  </style>
+</head>
+<body>
+  <img id="g" src="../../assets/img_res/hand/default/normal.png" width="32" height="32" draggable="false" alt="" />
+  <script>
+    window.setPetCursor = function (kind) {
+      document.getElementById("g").src =
+        kind === "press"
+          ? "../../assets/img_res/hand/default/press.png"
+          : "../../assets/img_res/hand/default/normal.png";
+    };
+  </script>
+</body>
+</html>

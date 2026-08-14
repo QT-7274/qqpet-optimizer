@@ -7,6 +7,8 @@ const {
 } = require("../qq-pet-macos/src/windows/util/trayPopupPosition.js");
 const {
   resolveRightMenuPosition,
+  applyTrayMenuLayout,
+  STATE_INFO_SIZE,
 } = require("../qq-pet-macos/src/windows/popups/rightMenu/rightMenuPosition.js");
 
 const RIGHT_MENU = { width: 340, height: 300 };
@@ -31,21 +33,39 @@ test("tray-rightmenu-position.TRAY.1 tray right-click uses the same workArea rul
     windowSize: RIGHT_MENU,
     workArea: MAC_WORK,
   });
-  const expected = computeTrayPopupPosition({
-    trayBounds: TRAY,
-    windowSize: RIGHT_MENU,
-    workArea: MAC_WORK,
-  });
-  assert.deepEqual(menuPos, expected);
-  assert.ok(menuPos.y >= MAC_WORK.y);
-  assert.ok(menuPos.y >= TRAY.y + TRAY.height - 1);
-
   const statePos = computeTrayPopupPosition({
     trayBounds: TRAY,
     windowSize: STATE_INFO,
     workArea: MAC_WORK,
   });
-  assert.equal(menuPos.y, statePos.y);
+  assert.deepEqual(STATE_INFO_SIZE, STATE_INFO);
+  assert.deepEqual(menuPos, statePos);
+  assert.ok(menuPos.y >= MAC_WORK.y);
+  assert.ok(menuPos.y >= TRAY.y + TRAY.height - 1);
+});
+
+// tray-rightmenu-position.TRAY.2
+test("tray-rightmenu-position.TRAY.2 tray menu pins to the top of the window", () => {
+  const vm = {
+    positionType: undefined,
+    menuMainStyle: { position: "fixed", bottom: "0", left: "50%" },
+    sunBkBodyStyle: { transform: "translateX(-100%) translateY(-40%)" },
+  };
+  applyTrayMenuLayout(vm);
+  assert.equal(vm.menuMainStyle.top, "0px");
+  assert.equal(vm.menuMainStyle.left, "0px");
+  assert.equal(vm.menuMainStyle.bottom, "auto");
+  assert.match(vm.sunBkBodyStyle.transform, /translateX\(100%\)/);
+});
+
+test("tray-rightmenu-position.PET.1 applyTrayMenuLayout skips followMain", () => {
+  const vm = {
+    positionType: "followMain",
+    menuMainStyle: { left: "25%", bottom: "20px" },
+  };
+  applyTrayMenuLayout(vm);
+  assert.equal(vm.menuMainStyle.left, "25%");
+  assert.equal(vm.menuMainStyle.bottom, "20px");
 });
 
 // tray-rightmenu-position.PET.1
@@ -70,4 +90,14 @@ test("rightMenu window uses resolveRightMenuPosition", () => {
   assert.match(rightMenuMain, /rightMenuPosition/);
   assert.match(rightMenuMain, /resolveRightMenuPosition/);
   assert.match(rightMenuMain, /applyPositionToWindow/);
+  assert.match(rightMenuMain, /rightMenuPosition\.js/);
+});
+
+const rightMenuIndex = fs.readFileSync(
+  path.join(__dirname, "../qq-pet-macos/src/windows/popups/rightMenu/index.js"),
+  "utf8"
+);
+
+test("tray-rightmenu-position.TRAY.2 renderer applies tray menu layout", () => {
+  assert.match(rightMenuIndex, /applyTrayMenuLayout\(this\)/);
 });

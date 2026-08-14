@@ -20,17 +20,30 @@ body {
   transition: all 1s;
   font-size: 14px;
 }
+#move,
+#move:active,
+#move * {
+  /* pet-cursor.CURSOR.3: transparent BrowserWindow ignores CSS url() cursors */
+  cursor: none !important;
+}
 #move {
   /* cursor: pointer; */
   /* background-color: #fff; */
   /* opacity: 0.4; */
   /* padding: 30px; */
   user-select: none;
-  cursor: url("../../assets/img_res/hand/default/normal.png") 4 12, url("../../assets/img_res/hand/default/normal.cur"), default !important;
   position: relative;
 }
-#move:active {
-  cursor: url("../../assets/img_res/hand/default/press.png") 6 15, url("../../assets/img_res/hand/default/press.cur"), default !important;
+#pet-cursor-follower {
+  position: fixed;
+  left: 0;
+  top: 0;
+  width: 32px;
+  height: 32px;
+  pointer-events: none !important;
+  z-index: 2147483647;
+  display: none;
+  image-rendering: pixelated;
 }
 #pet, ruffle-player, ruffle-player * {
   /* opacity: 0.2; */
