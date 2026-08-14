@@ -6,6 +6,9 @@ const {
   installFlashPlayerApi,
   createPetEmbed,
   describePlayer,
+  getRufflePetConfig,
+  hideRuffleChrome,
+  changePetSwf,
 } = require("../qq-pet-macos/src/windows/util/pet/flashPlayerAdapter.js");
 
 function fakeRuffle({ numFrames = 24, frameRate = 12, src = "Stand.swf" } = {}) {
@@ -141,7 +144,7 @@ const mainJs = fs.readFileSync(
 test("swfPet polls through the Flash API adapter", () => {
   assert.match(swfPet, /flashPlayerAdapter/);
   assert.match(swfPet, /installFlashPlayerApi/);
-  assert.match(swfPet, /createPetEmbed/);
+  assert.match(swfPet, /changePetSwf/);
 });
 
 test("main window loads the adapter before swfPet", () => {
@@ -149,4 +152,104 @@ test("main window loads the adapter before swfPet", () => {
     mainJs,
     /jsFiles=\["\.\/util\/move\.js","\.\/util\/pet\/flashPlayerAdapter\.js","\.\/util\/pet\/swfPet\.js"/
   );
+});
+
+const appHtml = fs.readFileSync(
+  path.join(__dirname, "../qq-pet-macos/src/windows/app.html"),
+  "utf8"
+);
+
+// pet-ruffle-chrome.SPLASH.1
+test("pet-ruffle-chrome.SPLASH.1 config skips splash play overlay and blue stage", () => {
+  const cfg = getRufflePetConfig();
+  assert.equal(cfg.autoplay, "on");
+  assert.equal(cfg.unmuteOverlay, "hidden");
+  assert.equal(cfg.splashScreen, false);
+  assert.equal(cfg.preloader, false);
+  assert.equal(cfg.wmode, "transparent");
+  assert.equal(cfg.letterbox, "off");
+  assert.equal(cfg.backgroundColor, null);
+});
+
+test("pet-ruffle-chrome.SPLASH.1 app.html applies that config before ruffle.js", () => {
+  const splashAt = appHtml.indexOf("splashScreen");
+  const preloaderAt = appHtml.indexOf("preloader");
+  const ruffleAt = appHtml.indexOf('src="./js/ruffle/ruffle.js"');
+  assert.match(appHtml, /splashScreen:\s*false/);
+  assert.match(appHtml, /preloader:\s*false/);
+  assert.ok(splashAt >= 0 && splashAt < ruffleAt);
+  assert.ok(preloaderAt >= 0 && preloaderAt < ruffleAt);
+});
+
+test("pet-ruffle-chrome.SWAP.1 changeSwf reuses ruffle load instead of a new player", () => {
+  const loads = [];
+  const el = {
+    tagName: "RUFFLE-PLAYER",
+    metadata: { numFrames: 12, frameRate: 12 },
+    PercentLoaded() {
+      return 100;
+    },
+    load(opts) {
+      loads.push(opts);
+    },
+    setAttribute() {},
+    getAttribute(name) {
+      return name === "src" ? "Stand.swf" : null;
+    },
+  };
+  const result = changePetSwf(el, { src: "Hide_left.swf", wmode: "transparent" });
+  assert.equal(result.replaced, false);
+  assert.equal(result.el, el);
+  assert.equal(loads.length, 1);
+  assert.equal(loads[0].url, "Hide_left.swf");
+  assert.equal(loads[0].splashScreen, false);
+  assert.equal(loads[0].autoplay, "on");
+  assert.equal(loads[0].wmode, "transparent");
+});
+
+test("pet-ruffle-chrome.SWAP.1 missing load still builds a fresh embed", () => {
+  const result = changePetSwf(
+    { tagName: "EMBED" },
+    { id: "pet", src: "Stand.swf" }
+  );
+  assert.equal(result.replaced, true);
+  assert.equal(result.el.tagName, "EMBED");
+  assert.equal(result.el.getAttribute("src"), "Stand.swf");
+});
+
+test("pet-ruffle-chrome.SWAP.1 load resets the Flash API so the next SWF is not finished", () => {
+  const { el } = fakeRuffle({ numFrames: 24, frameRate: 12 });
+  el.load = function () {
+    this.metadata = null;
+  };
+  let now = 0;
+  installFlashPlayerApi(el, { now: () => now });
+  now = 20_000;
+  assert.equal(el.CurrentFrame(), 23);
+  changePetSwf(el, { src: "Eat1.swf" }, { now: () => now });
+  assert.equal(el.CurrentFrame(), -1);
+  assert.equal(el.TotalFrames(), 0);
+});
+
+test("pet-ruffle-chrome.SPLASH.1 hideRuffleChrome hides play-button and splash in shadow DOM", () => {
+  const appended = [];
+  const player = {
+    shadowRoot: {
+      querySelector() {
+        return null;
+      },
+      appendChild(node) {
+        appended.push(node);
+      },
+    },
+  };
+  hideRuffleChrome(player);
+  const css = appended.map((n) => n.textContent || "").join("\n");
+  assert.match(css, /play-button/);
+  assert.match(css, /splash-screen/);
+  assert.match(css, /unmute-overlay/);
+});
+
+test("swfPet changeSwf uses changePetSwf", () => {
+  assert.match(swfPet, /changePetSwf/);
 });
